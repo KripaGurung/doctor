@@ -97,17 +97,7 @@ export const doctors = [
         fees: "200",
         address: "['New York', 'USA']"
     },
-    {
-        _id: "doc5",
-        name: "Dr. Kripa Gurung",
-        speciality: "Gastroenterology",
-        image: doc1,
-        degree: "MBBS, MD",
-        experience: "10 Years",
-        about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
-        fees: "200",
-        address: "['New York', 'USA']"
-    },
+   
 ];
 
 export const featuresdoctors = [
@@ -137,6 +127,17 @@ export const featuresdoctors = [
         _id: "doc3",
         name: "Dr. Kripa Gurung",
         speciality: "Cardiology",
+        image: doc1,
+        degree: "MBBS, MD",
+        experience: "10 Years",
+        about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+        fees: "200",
+        address: "['New York', 'USA']"
+    },
+    {
+        _id: "doc4",
+        name: "Dr. Kripa Gurung",
+        speciality: "Gastroenterology",
         image: doc1,
         degree: "MBBS, MD",
         experience: "10 Years",

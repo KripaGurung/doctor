@@ -1,6 +1,7 @@
 import Header from "../Components/Header"
 import SpecialityMenu from "../Components/SpecialityMenu"
 import TopDoctors from "../Components/TopDoctors"
+import TopFeatureDoctors from "../Components/TopFeatureDoctors"
 
 const Home = () => {
   return (
@@ -8,6 +9,7 @@ const Home = () => {
         <Header/>
         <SpecialityMenu/>
         <TopDoctors/>
+        <TopFeatureDoctors/>
     </div>
   )
 }
