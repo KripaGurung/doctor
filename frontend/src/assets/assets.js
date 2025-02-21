@@ -27,11 +27,11 @@ export const assets = {
 
 export const specialityData = [
     {
-        speciality: 'General physician',
+        speciality: 'General Physician',
         image: Generalphysician
     },
     {
-        speciality: 'Gastroenterology',
+        speciality: 'Gastroenterologist',
         image: gastroenterology
     },
     {
@@ -47,7 +47,7 @@ export const specialityData = [
         image: Pediatricians
     },
     {
-        speciality: 'Cardiology',
+        speciality: 'Cardiologist',
         image: Cardiology
     }
 ];
@@ -78,7 +78,7 @@ export const doctors = [
     {
         _id: "doc3",
         name: "Dr. Kripa Gurung",
-        speciality: "Cardiology",
+        speciality: "Cardiologist",
         image: doc1,
         degree: "MBBS, MD",
         experience: "10 Years",
@@ -89,7 +89,7 @@ export const doctors = [
     {
         _id: "doc4",
         name: "Dr. Kripa Gurung",
-        speciality: "General physician",
+        speciality: "General Physician",
         image: doc1,
         degree: "MBBS, MD",
         experience: "10 Years",
@@ -126,7 +126,7 @@ export const featuresdoctors = [
     {
         _id: "doc3",
         name: "Dr. Kripa Gurung",
-        speciality: "Cardiology",
+        speciality: "Cardiologist",
         image: doc1,
         degree: "MBBS, MD",
         experience: "10 Years",
@@ -137,7 +137,7 @@ export const featuresdoctors = [
     {
         _id: "doc4",
         name: "Dr. Kripa Gurung",
-        speciality: "Gastroenterology",
+        speciality: "Gastroenterologist",
         image: doc1,
         degree: "MBBS, MD",
         experience: "10 Years",
@@ -173,7 +173,7 @@ export const featuresdoctors = [
         {
             _id: "doc3",
             name: "Dr. Kripa Gurung",
-            speciality: "Cardiology",
+            speciality: "Cardiologist",
             image: doc1,
             degree: "MBBS, MD",
             experience: "10 Years",
@@ -184,7 +184,7 @@ export const featuresdoctors = [
         {
             _id: "doc4",
             name: "Dr. Kripa Gurung",
-            speciality: "Gastroenterology",
+            speciality: "Gastroenterologist",
             image: doc1,
             degree: "MBBS, MD",
             experience: "10 Years",
