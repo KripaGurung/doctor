@@ -144,5 +144,74 @@ export const featuresdoctors = [
         about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
         fees: "200",
         address: "['New York', 'USA']"
-    },
-];
+        }
+    ];
+
+    export const filteredDoctors = [
+        {
+            _id: "doc1",
+            name: "Dr. Kripa Gurung",
+            speciality: "Dermatologist",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "10 Years",
+            about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+            fees: "200",
+            address: "['New York', 'USA']"
+        },
+        {
+            _id: "doc2",
+            name: "Dr. Kripa Gurung",
+            speciality: "Neurologist",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "8 Years",
+            about: "Dr. Jane Doe is a Dermatologist with 8 years of experience.",
+            fees: "150",
+            address: "['California', 'USA']"
+        },
+        {
+            _id: "doc3",
+            name: "Dr. Kripa Gurung",
+            speciality: "Cardiology",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "10 Years",
+            about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+            fees: "200",
+            address: "['New York', 'USA']"
+        },
+        {
+            _id: "doc4",
+            name: "Dr. Kripa Gurung",
+            speciality: "Gastroenterology",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "10 Years",
+            about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+            fees: "200",
+            address: "['New York', 'USA']"
+        },
+        {
+            _id: "doc5",
+            name: "Dr. Kripa Gurung",
+            speciality: "Pediatricians",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "10 Years",
+            about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+            fees: "200",
+            address: "['New York', 'USA']"
+        },
+        {
+            _id: "doc6",
+            name: "Dr. Kripa Gurung",
+            speciality: "General physician",
+            image: doc1,
+            degree: "MBBS, MD",
+            experience: "10 Years",
+            about: "Dr. John Doe is a Dermatologist with 10 years of experience.",
+            fees: "200",
+            address: "['New York', 'USA']"
+        },
+    ];

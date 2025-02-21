@@ -11,7 +11,7 @@ const Navbar = () => {
     return (
        <div className= "mx-4 sm:mx-[10%]">
            <div className='flex items-center justify-between text-sm py-4 mb-5 border-b border-gray-400'>
-               <img src='assets/logo.png' alt='logo' className='h-8'/>
+               <img onClick={() =>navigate('/')} src='assets/logo.png' alt='logo' className='w-44 cursor-pointer'/>
                <ul className='hidden md:flex items-start gap-5 font medium'>
                    <NavLink to={'/home'}>
                        <li className='py-1'>Home</li>
