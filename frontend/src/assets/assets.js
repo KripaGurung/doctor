@@ -9,7 +9,11 @@ import Neurologist from './Neurologist.png';
 import Pediatricians from './Pediatricians.png';
 import Cardiology from './Cardiology.png';
 import doc1 from './doc1.png';
-
+import verified from './verified.png';
+import info from './info.png';
+import image1 from './image1.png';
+import patient from './patient.png';
+import dd from './dd.png';
 
 export const assets = {
     user,
@@ -22,7 +26,12 @@ export const assets = {
     Neurologist,
     Pediatricians,
     Cardiology,
-    doc1
+    doc1,
+    verified,
+    info,
+    image1,
+    patient,
+    dd,
 };
 
 export const specialityData = [
