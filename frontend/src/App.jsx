@@ -6,6 +6,7 @@ import Navbar from './Components/Navbar';
 import Footer from './Components/Footer';
 import Appointment from './pages/Appointment';
 import Option from './pages/Option';
+import Myprofile from './pages/Myprofile';
 
 const App = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="doctors" element={<Doctors />} />
         <Route path="doctors/:speciality" element={<Doctors />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
+        <Route path='my-profile' element={<Myprofile/>}/>
         {/* Handle unknown routes */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
