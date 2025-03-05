@@ -22,7 +22,7 @@ const App = () => {
         <Route path="doctors" element={<Doctors />} />
         <Route path="doctors/:speciality" element={<Doctors />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
-        <Route path="/appointment" element={<MyAppointment />} />
+        <Route path="/appointments" element={<MyAppointment />} />
         <Route path='my-profile' element={<Myprofile/>}/>
         {/* Handle unknown routes */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />

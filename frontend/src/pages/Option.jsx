@@ -7,51 +7,46 @@ export default function HomePage() {
   return (
     <div 
       className="min-h-screen w-full flex flex-col bg-cover bg-center bg-no-repeat" 
-      // style={{ backgroundImage: `url(${assets.image1})` }}
     >
-      {/* Overlay for better readability */}
-      <div className="min-h-screen w-full bg-white/80 flex flex-col">
+      <div className="min-h-screen w-full bg-white/90 flex flex-col justify-center items-center">
 
         {/* Hero Section */}
-        <div className="flex flex-col md:flex-row items-center justify-between w-full max-w-7xl mx-auto mt-32 px-6">
-          <div className="md:w-1/2 text-left">
-            <h2 className="text-5xl font-bold text-gray-900">Online Doctor</h2>
-            <p className="text-lg text-gray-600 mt-4">
-              Get medical consultations from the best doctors. Book appointments and receive care from anywhere.
-            </p>
-            <button className="mt-6 px-8 py-4 bg-red-500 text-white text-lg rounded-full hover:bg-red-600 transition">
-              Learn More
-            </button>
-          </div>
+        <div className="text-center max-w-3xl px-8">
+          <h1 className="text-6xl font-extrabold text-blue-900 leading-tight">Your Health, Our Priority</h1>
+          <p className="text-xl text-gray-700 mt-6">
+            Book appointments with top doctors from the comfort of your home. Quality healthcare, anytime, anywhere.
+          </p>
+          <button className="mt-8 px-10 py-4 bg-blue-600 text-white text-lg rounded-lg shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">
+            Get Started
+          </button>
         </div>
 
         {/* Role Selection */}
-        <div className="flex flex-col md:flex-row items-center justify-center w-full max-w-6xl mt-16 gap-12 px-6">
-          <div className="bg-white shadow-xl rounded-3xl overflow-hidden flex flex-col items-center text-center p-8 w-full max-w-lg border border-gray-200">
-            <img src={assets.patient} alt="Patient" className="w-48 mb-6 rounded-lg" />
-            <h2 className="text-3xl font-semibold">Patient Portal</h2>
-            <p className="text-gray-600 mt-3">Book appointments, access medical records, and consult doctors.</p>
+        <div className="flex flex-wrap justify-center gap-10 mt-20 w-full max-w-5xl">
+          <div className="bg-white shadow-2xl rounded-2xl overflow-hidden flex flex-col items-center text-center p-10 w-80 border border-gray-200 hover:shadow-blue-400 transition-shadow">
+            <img src={assets.patient} alt="Patient" className="w-40 h-40 object-cover rounded-full mb-6 border-4 border-blue-100" />
+            <h2 className="text-3xl font-bold text-gray-900">Patient Portal</h2>
+            <p className="text-gray-600 mt-4">Book appointments, access records, and consult doctors.</p>
             <button
-              className="mt-6 px-8 py-4 bg-green-500 text-white text-lg rounded-full hover:bg-green-600 transition"
+              className="mt-6 px-8 py-3 bg-green-600 text-white text-lg rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105"
               onClick={() => navigate("/patient-login")}
             >
               Login as Patient
             </button>
           </div>
 
-          <div className="bg-white shadow-xl rounded-3xl overflow-hidden flex flex-col items-center text-center p-8 w-full max-w-lg border border-gray-200">
-            <img src={assets.dd} alt="Doctor" className="w-48 mb-6 rounded-lg" />
-            <h2 className="text-3xl font-semibold">Join as a Doctor</h2>
-            <p className="text-gray-600 mt-3">Sign up to offer medical care and manage patients.</p>
+          <div className="bg-white shadow-2xl rounded-2xl overflow-hidden flex flex-col items-center text-center p-10 w-80 border border-gray-200 hover:shadow-blue-400 transition-shadow">
+            <img src={assets.dd} alt="Doctor" className="w-40 h-40 object-cover rounded-full mb-6 border-4 border-blue-100" />
+            <h2 className="text-3xl font-bold text-gray-900">Join as Doctor</h2>
+            <p className="text-gray-600 mt-4">Join to provide care and manage patients.</p>
             <button
-              className="mt-6 px-8 py-4 bg-blue-500 text-white text-lg rounded-full hover:bg-blue-600 transition"
+              className="mt-6 px-8 py-3 bg-blue-600 text-white text-lg rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105"
               onClick={() => navigate("/doctor-apply")}
             >
               Apply as Doctor
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
