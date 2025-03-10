@@ -37,10 +37,12 @@ const Login = () => {
 
   const loginUser = async () => {
     try {
-      const response = await axios.post('/api/users/login', { email, password });
+      const response = await axios.get('http://localhost:4000/api/user/login', { email, password });
+      console.log('Response:', response);
       if (response.data.success) {
         setSuccess(response.data.message);
         setError("");
+        // navigator.push('/home');
       } else {
         setError(response.data.message);
         setSuccess("");

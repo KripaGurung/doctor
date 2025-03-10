@@ -9,6 +9,7 @@ import Option from './pages/Option';
 import Myprofile from './pages/Myprofile';
 import MyAppointment from './pages/MyAppointment';
 
+
 const App = () => {
   const location = useLocation();
 
