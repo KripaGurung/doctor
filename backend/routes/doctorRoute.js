@@ -3,6 +3,8 @@ import multer from 'multer';
 import doctorModel from '../models/doctorModel.js';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
+import { doctorList, loginDoctor, appointmentsDoctor, appointmentCancel, appointmentComplete } from '../controllers/doctorController.js'
+import authDoctor from '../middlewares/authDoctor.js';
 
 const doctorRouter = express.Router();
 
@@ -57,5 +59,12 @@ doctorRouter.post('/apply-doctor', upload.single('certification'), async (req, r
         res.status(500).json({ message: 'Internal Server Error' });
     }
 });
+
+
+doctorRouter.get('/list',doctorList )
+doctorRouter.post('/login', loginDoctor)
+doctorRouter.get('/appointments', authDoctor, appointmentsDoctor)
+doctorRouter.post('/complete-appointment', authDoctor, appointmentComplete)
+doctorRouter.post('/cancel-appointment', authDoctor, appointmentCancel)
 
 export default doctorRouter;

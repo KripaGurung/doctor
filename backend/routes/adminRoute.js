@@ -7,8 +7,9 @@ import {
   applyDoctor,
   approveDoctor,
   rejectDoctor,
-} from "../controllers/adminController.js"; // Consolidated imports
-
+  getDoctorCount,
+  getPatientCount,
+} from "../controllers/adminController.js";
 import upload from "../middlewares/multer.js";
 import authAdmin from "../middlewares/authAdmin.js";
 
@@ -18,30 +19,18 @@ const adminRouter = express.Router();
 adminRouter.post("/login", loginAdmin);
 
 // Add doctor (Protected Route)
-adminRouter.post(
-  "/add-doctor",
-  authAdmin,
-  upload.fields([{ name: "image", maxCount: 1 }]),
-  addDoctor
-);
+adminRouter.post("/add-doctor", authAdmin, upload.fields([{ name: "image", maxCount: 1 }]), addDoctor);
 
-// Fetch all doctors (GET instead of POST)
 adminRouter.get("/all-doctors", authAdmin, allDoctors);
-
-// Fetch all pending doctor applications
 adminRouter.get("/pending-doctors", authAdmin, getPendingDoctors);
-
-// Doctor applies for approval (with certification upload)
-adminRouter.post(
-  "/apply-doctor",
-  upload.fields([{ name: "certification", maxCount: 1 }]),
-  applyDoctor
-);
-
-// Approve doctor application
+adminRouter.post("/apply-doctor", upload.fields([{ name: "certification", maxCount: 1 }]), applyDoctor);
 adminRouter.post("/approve-doctor", authAdmin, approveDoctor);
-
-// Reject doctor application
 adminRouter.post("/reject-doctor", authAdmin, rejectDoctor);
 
-export default adminRouter;
+// Route to get doctor count
+adminRouter.get("/doctor-count", authAdmin, getDoctorCount);
+
+// Route to get patient count
+adminRouter.get("/patient-count", authAdmin, getPatientCount);
+
+export default adminRouter

@@ -14,7 +14,9 @@ const userSchema = new mongoose.Schema({
     image: { type: String, default: "" },
     gender: { type: String, default: "Not Selected" },
     dob: { type: String, default: "Not Selected" },
-    phone: { type: String, default: '0000000000' }
+    phone: { type: String, default: '0000000000' },
+    resetToken: String,
+  resetTokenExpiry: Date,
 });
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);

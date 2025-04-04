@@ -4,14 +4,16 @@ import jwt from "jsonwebtoken";
 // import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
-import nodemailer from "nodemailer";
+import sendEmail from "../utils/sendEmail.js";
+import userModel from "../models/userModel.js";
+
 
 // // Configure Multer for file uploads (certifications, images)
 // const storage = multer.memoryStorage();
 // const upload = multer({ storage: storage });
 
 // API for adding a doctor
-export const addDoctor = async (req, res) => {
+const addDoctor = async (req, res) => {
   try {
     const { name, email, password, speciality, degree, experience, about, fees, address } = req.body;
     const imageFile = req.file; img // Get uploaded file
@@ -80,7 +82,7 @@ export const addDoctor = async (req, res) => {
 };
 
 // Admin login
-export const loginAdmin = async (req, res) => {
+const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -97,18 +99,18 @@ export const loginAdmin = async (req, res) => {
 };
 
 // Fetching all doctors
-export const allDoctors = async (req, res) => {
+const allDoctors = async (req, res) => {
   try {
-    const doctors = await doctorModel.find({}).select("-password");
-    res.json({ success: true, doctors });
+    const doctors = await doctorModel.find(); // Fetch all doctors from the database
+    res.status(200).json({ success: true, doctors });
   } catch (error) {
     console.error("Error fetching doctors:", error);
-    res.status(500).json({ success: false, message: "Internal Server Error!" });
+    res.status(500).json({ success: false, message: "Failed to fetch doctors" });
   }
 };
 
 // Doctor appling for approval
-export const applyDoctor = async (req, res) => {
+const applyDoctor = async (req, res) => {
   try {
     const { name, email, speciality, degree, experience, about, fees, addressLine1, addressLine2 } = req.body;
     const certificationFile = req.file?.certification; // Check for certification upload
@@ -142,7 +144,7 @@ export const applyDoctor = async (req, res) => {
 };
 
 // Fetch all pending doctor applications
-export const getPendingDoctors = async (req, res) => {
+const getPendingDoctors = async (req, res) => {
   try {
     const pendingDoctors = await doctorModel.find({ approved: false });
     res.status(200).json({ success: true, doctors: pendingDoctors });
@@ -152,33 +154,11 @@ export const getPendingDoctors = async (req, res) => {
   }
 };
 
-// Nodemailer transporter setup (Replace with your email credentials)
-const transporter = nodemailer.createTransport({
-  service: "gmail", // Use your email provider (Gmail, Outlook, SMTP, etc.)
-  auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASS, // Your email password or App Password
-  },
-});
 
-// Function to send email
-const sendEmail = async (to, subject, message) => {
-  try {
-    let info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to,
-      subject,
-      html: message,
-    });
-    console.log("Email sent: ", info.response);
-  } catch (error) {
-    console.error("Error sending email:", error);
-  }
-};
 
 
 //  approving doctor application
-export const approveDoctor = async (req, res) => {
+const approveDoctor = async (req, res) => {
   try {
     const { doctorId } = req.body;
     const doctor = await doctorModel.findById(doctorId);
@@ -188,16 +168,35 @@ export const approveDoctor = async (req, res) => {
     doctor.approved = true;
     await doctor.save();
 
-        // Send approval email
-        await sendEmail(
-          doctor.email,
-          "Application Approved",
-          `<p>Dear ${doctor.name},</p>
-          <p>Congratulations! Your application has been approved.</p>
-          <p>You can now access your doctor dashboard.</p>
-          <p>Best Regards,<br/>Admin Team</p>`
-        );
+        // // Send approval email
+        // await sendEmail(
+        //   doctor.email,
+        //   "Application Approved",
+        //   `<p>Dear ${doctor.name},</p>
+        //   <p>Congratulations! Your application has been approved.</p>
+        //   <p>You can now access your doctor dashboard.</p>
+        //   <p>Best Regards,<br/>Admin Team</p>`
+        // );
 
+        // Send approval email
+    const emailSubject = "Application Approved";
+    const emailMessage = `
+      Dear ${doctor.name},
+
+      Congratulations! Your application has been approved.
+      You can now access your doctor dashboard.
+
+      Best Regards,
+      Admin Team
+    `;
+
+    const emailResult = await sendEmail(doctor.email, emailSubject, emailMessage);
+
+    if (!emailResult.success) {
+      console.error("Error sending approval email:", emailResult.message);
+      return res.status(500).json({ success: false, message: "Doctor approved, but email could not be sent." });
+    }
+    
     res.status(200).json({ success: true, message: "Doctor approved successfully" });
   } catch (error) {
     console.error("Error approving doctor:", error);
@@ -206,7 +205,7 @@ export const approveDoctor = async (req, res) => {
 };
 
 //  cancelling doctor application
-export const rejectDoctor = async (req, res) => {
+const rejectDoctor = async (req, res) => {
   try {
     const { doctorId } = req.body;
     const doctor = await doctorModel.findByIdAndDelete(doctorId);
@@ -228,4 +227,28 @@ export const rejectDoctor = async (req, res) => {
     console.error("Error rejecting doctor:", error);
     res.status(500).json({ success: false, message: "Error rejecting doctor" });
   }
+}
+
+
+const getDoctorCount = async (req, res) => {
+  try {
+    const count = await doctorModel.countDocuments(); // Count all doctors
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error("Error fetching doctor count:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch doctor count." });
+  }
+}
+
+const getPatientCount = async (req, res) => {
+  try {
+    // Count all users in the database
+    const count = await userModel.countDocuments();
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error("Error fetching patient count:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch patient count." });
+  }
 };
+
+export { addDoctor, loginAdmin, allDoctors, applyDoctor, getPendingDoctors, approveDoctor, rejectDoctor, getDoctorCount, getPatientCount}
