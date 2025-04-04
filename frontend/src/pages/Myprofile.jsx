@@ -4,7 +4,7 @@ import { assets } from "../assets/assets";
 const MyProfile = () => {
   const [userData, setUserData] = useState({
     name: "Krepa Gurung",
-    image: assets.profile_pic,
+    image: assets.profile,
     email: "krepa@gmail.com",
     phone: "9876543210",
     address: {

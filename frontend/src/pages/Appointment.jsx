@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 import { AppContext } from "../context/AppContext"
 import { assets } from "../assets/assets"
+import { FaStar } from "react-icons/fa"
 
 
 const Appointment = () => {
@@ -16,6 +17,10 @@ const Appointment = () => {
   const [slotIndex, setSlotsIndex] = useState(0)
   const [slotTime, setSlotTime] =useState('')
   
+  const [hover, setHover] = useState(0)
+  const [rating, setRating] = useState(0)
+  const [review, setReview] = useState("")
+
   const fetchDocInfo = async () => {
     const docInfo = doctors.find(doc => doc._id === docId)
     setDocInfo(docInfo)
@@ -136,8 +141,40 @@ const Appointment = () => {
         </div>
         <button className="bg-primary text-white text-sm font-light px-14 py-3 rounded-full my-6">Book an appointment</button>
       </div>
-    </div>
-    
+
+      
+        {/* Rating & Review Section */}
+        <div className="mt-8 border border-gray-300 p-6 rounded-lg shadow-sm bg-white">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Rate & Review Your Experience</h3>
+          <div className="flex gap-2 mb-4">
+            {[...Array(5)].map((_, index) => {
+              const starValue = index + 1;
+              return (
+                <FaStar
+                  key={index}
+                  size={30}
+                  className={`cursor-pointer transition-colors duration-200 ${
+                    starValue <= (hover || rating) ? "text-yellow-500" : "text-gray-300"
+                  }`}
+                  onClick={() => setRating(starValue)}
+                  onMouseEnter={() => setHover(starValue)}
+                  onMouseLeave={() => setHover(rating)}
+                />
+              );
+            })}
+          </div>
+          <textarea
+            className="w-full p-3 border rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            rows="4"
+            placeholder="Write your review..."
+            value={review}
+            onChange={(e) => setReview(e.target.value)}
+          ></textarea>
+          <button className="mt-4 px-6 py-2 bg-primary text-white rounded-full hover:bg-blue-700 transition">
+            Submit Review
+          </button>
+        </div>
+      </div>
   )
 }
 

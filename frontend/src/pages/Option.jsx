@@ -16,9 +16,6 @@ export default function HomePage() {
           <p className="text-xl text-gray-700 mt-6">
             Book appointments with top doctors from the comfort of your home. Quality healthcare, anytime, anywhere.
           </p>
-          <button className="mt-8 px-10 py-4 bg-blue-600 text-white text-lg rounded-lg shadow-lg hover:bg-blue-700 transition-transform transform hover:scale-105">
-            Get Started
-          </button>
         </div>
 
         {/* Role Selection */}

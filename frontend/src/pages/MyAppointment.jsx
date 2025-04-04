@@ -1,20 +1,21 @@
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
+import KhaltiCheckout from "khalti-checkout-web";
 
 const MyAppointment = () => {
   const { doctors } = useContext(AppContext);
-
+  const [paymentMethod, setPaymentMethod] = useState(null);
 
   // Khalti Payment Config
   const khaltiConfig = {
-    publicKey: "your_public_key_here", // Replace with your Khalti Public Key
+    publicKey: "2e93b617f57d4a4e9e992692320bc6e1", // Replace with your Khalti Public Key
     productIdentity: "1234567890",
-    productName: "Hotel Booking",
-    productUrl: "http://localhost:3000",
+    productName: "Doctor appointment system",
+    productUrl: "http://localhost:3000/",
     eventHandler: {
       onSuccess(payload) {
         console.log("Payment Successful", payload);
-        alert("Khalti Payment successful! Booking confirmed.");
+        alert("Khalti Payment successful! Appointment confirmed.");
       },
       onError(error) {
         console.log("Payment Error", error);
@@ -27,7 +28,7 @@ const MyAppointment = () => {
     paymentPreference: ["KHALTI"],
   };
 
-  const khaltiCheckout = new khaltiCheckout(khaltiConfig);
+  const khaltiCheckout = new KhaltiCheckout(khaltiConfig);
 
   const handleKhaltiPayment = () => {
     khaltiCheckout.show({ amount: 1000 }); // Amount in Paisa (1000 = Rs.10)
@@ -40,19 +41,14 @@ const MyAppointment = () => {
     window.location.href = url;
   };
 
-  const userDetails = useContext(AppContext).userDetails;
-
-  const handlePayment = (e) => {
-    e.preventDefault();
-    if (userDetails?.paymentMethod === "Khalti") {
+  const handlePayment = (method) => {
+    setPaymentMethod(method);
+    if (method === "Khalti") {
       handleKhaltiPayment();
-    } else if (userDetails?.paymentMethod === "esewa") {
+    } else if (method === "eSewa") {
       handleEsewaPayment();
-    } else {
-      alert("Please select a payment method.");
     }
   };
-
 
   return (
     <div className="p-6 bg-light-blue-100 min-h-screen">
@@ -86,9 +82,12 @@ const MyAppointment = () => {
             </div>
 
             <div className="flex gap-4">
-            <button onClick={handlePayment} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-            Pay Online
-          </button>
+              <button
+                onClick={() => setPaymentMethod("select")}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Pay Online
+              </button>
               <button className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
                 Cancel Appointment
               </button>
@@ -96,8 +95,28 @@ const MyAppointment = () => {
           </div>
         ))}
       </div>
+
+      {paymentMethod === "select" && (
+        <div className="mt-6 p-4 bg-white shadow-lg rounded-lg text-center">
+          <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => handlePayment("Khalti")}
+              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Pay with Khalti
+            </button>
+            <button
+              onClick={() => handlePayment("eSewa")}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              Pay with eSewa
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default MyAppointment
+export default MyAppointment;

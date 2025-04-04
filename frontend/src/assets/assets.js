@@ -14,6 +14,7 @@ import info from './info.png';
 import image1 from './image1.png';
 import patient from './patient.png';
 import dd from './dd.png';
+import profile  from './profile.png';
 
 export const assets = {
     user,
@@ -32,6 +33,7 @@ export const assets = {
     image1,
     patient,
     dd,
+    profile
 };
 
 export const specialityData = [

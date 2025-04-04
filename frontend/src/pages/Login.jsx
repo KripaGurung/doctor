@@ -1,55 +1,72 @@
 import { useState } from "react";
 import bb from "../assets/bb.jpg";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Login = () => {
+  const navigate = useNavigate(); // Initialize navigate function
+
   const [state, setState] = useState("Login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleStateChange = (newState) => {
     setState(newState);
     setEmail("");
     setName("");
     setPassword("");
-    setError("");
-    setSuccess("");
   };
 
+  // Register User Function
   const registerUser = async () => {
     try {
-      const response = await axios.post('http://localhost:4000/api/user/addUser', { name, email, password });
+      const response = await axios.post(
+        "http://localhost:4000/api/user/addUser",
+        { name, email, password },
+        { headers: { "Content-Type": "application/json" } } // Ensure JSON format
+      );
+
       if (response.data.success) {
-        setSuccess(response.data.message);
-        setError("");
+        toast.success(response.data.message); // Show success toast
+        handleStateChange("Login"); // Switch to login state after successful registration
       } else {
-        setError(response.data.message);
-        setSuccess("");
+        toast.error(response.data.message); // Show error toast
       }
     } catch (error) {
-      setError(error.response?.data?.message || "An error occurred while registering. Please try again.");
-      setSuccess("");
+      toast.error(
+        error.response?.data?.message || "An error occurred while registering. Please try again."
+      );
     }
   };
 
+  // Login User Function
   const loginUser = async () => {
     try {
-      const response = await axios.get('http://localhost:4000/api/user/login', { email, password });
-      console.log('Response:', response);
+      const response = await axios.post(
+        "http://localhost:4000/api/user/login",
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("Login Response:", response.data);
+
       if (response.data.success) {
-        setSuccess(response.data.message);
-        setError("");
-        // navigator.push('/home');
+        toast.success(response.data.message); // Show success toast
+
+        // Store token in localStorage
+        localStorage.setItem("token", response.data.token);
+
+        // Redirect to home
+        navigate("/home");
       } else {
-        setError(response.data.message);
-        setSuccess("");
+        toast.error(response.data.message); // Show error toast
       }
     } catch (error) {
-      setError(error.response?.data?.message || "An error occurred while logging in. Please try again.");
-      setSuccess("");
+      console.log("Login Error:", error.response);
+      toast.error(error.response?.data?.message || "An error occurred. Please try again.");
     }
   };
 
@@ -61,6 +78,10 @@ const Login = () => {
       loginUser();
     }
   };
+
+  const handlePasswordChange = () => {
+    navigate("/forgot-password");
+  }
 
   return (
     <div
@@ -75,9 +96,6 @@ const Login = () => {
           <p className="text-center text-gray-600">
             Please {state === "Sign Up" ? "Create Account" : "Login"} to book an appointment
           </p>
-
-          {error && <p className="text-red-500 text-center">{error}</p>}
-          {success && <p className="text-green-500 text-center">{success}</p>}
 
           <div className="w-full">
             <p className="font-medium">Email</p>
@@ -118,7 +136,7 @@ const Login = () => {
           </div>
 
           {state === "Login" && (
-            <p className="text-xs text-blue-600 cursor-pointer underline self-end">
+            <p onClick={() => {handlePasswordChange()}} className="text-xs text-blue-600 cursor-pointer underline self-end">
               Forgot Password?
             </p>
           )}
@@ -150,6 +168,7 @@ const Login = () => {
           )}
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };
