@@ -1,122 +1,197 @@
-import { useContext, useState } from "react";
-import { AppContext } from "../context/AppContext";
-import KhaltiCheckout from "khalti-checkout-web";
+import { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../context/AppContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import Swal from 'sweetalert2';
+import KhaltiCheckout from 'khalti-checkout-web';
 
-const MyAppointment = () => {
-  const { doctors } = useContext(AppContext);
-  const [paymentMethod, setPaymentMethod] = useState(null);
+const MyAppointments = () => {
+    const { backendUrl, token, getDoctorsData } = useContext(AppContext);
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedPaymentId, setSelectedPaymentId] = useState(null);
 
-  // Khalti Payment Config
-  const khaltiConfig = {
-    publicKey: "2e93b617f57d4a4e9e992692320bc6e1", // Replace with your Khalti Public Key
-    productIdentity: "1234567890",
-    productName: "Doctor appointment system",
-    productUrl: "http://localhost:3000/",
-    eventHandler: {
-      onSuccess(payload) {
-        console.log("Payment Successful", payload);
-        alert("Khalti Payment successful! Appointment confirmed.");
-      },
-      onError(error) {
-        console.log("Payment Error", error);
-        alert("Khalti Payment failed. Try again.");
-      },
-      onClose() {
-        console.log("Payment closed.");
-      },
-    },
-    paymentPreference: ["KHALTI"],
-  };
+    const months = [" ", "Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
 
-  const khaltiCheckout = new KhaltiCheckout(khaltiConfig);
+    const slotDateFormat = (slotDate) => {
+        const dateArray = slotDate.split('_');
+        return dateArray[0] + " " + months[Number(dateArray[1])] + " " + dateArray[2];
+    };
 
-  const handleKhaltiPayment = () => {
-    khaltiCheckout.show({ amount: 1000 }); // Amount in Paisa (1000 = Rs.10)
-  };
+    const getUserAppointments = async () => {
+        try {
+            const { data } = await axios.get(`${backendUrl}/api/user/appointments`, { headers: { token } });
+            if (data.success) {
+                setAppointments(data.appointments.reverse());
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to fetch appointments');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  // eSewa Payment Function
-  const handleEsewaPayment = () => {
-    const amount = 10; // Rs.10
-    const url = `https://esewa.com.np/epay/main?amt=${amount}&psc=0&pdc=0&txAmt=0&tAmt=${amount}&pid=1234567890&scd=your_esewa_merchant_id&su=http://localhost:3000/payment-success&fu=http://localhost:3000/payment-failed`;
-    window.location.href = url;
-  };
+    const cancelAppointment = async (appointmentId) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to cancel this appointment?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel it!',
+                cancelButtonText: 'No, keep it'
+            });
 
-  const handlePayment = (method) => {
-    setPaymentMethod(method);
-    if (method === "Khalti") {
-      handleKhaltiPayment();
-    } else if (method === "eSewa") {
-      handleEsewaPayment();
-    }
-  };
+            if (result.isConfirmed) {
+                const { data } = await axios.post(
+                    `${backendUrl}/api/user/cancel-appointment`,
+                    { appointmentId },
+                    { headers: { token } }
+                );
 
-  return (
-    <div className="p-6 bg-light-blue-100 min-h-screen">
-      <h2 className="text-2xl font-bold mb-6 text-blue-800">My Appointments</h2>
+                if (data.success) {
+                    toast.success(data.message);
+                    getUserAppointments();
+                    getDoctorsData();
+                } else {
+                    toast.error(data.message);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to cancel appointment');
+        }
+    };
 
-      <div className="space-y-6">
-        {doctors.slice(0, 2).map((item, index) => (
-          <div
-            key={index}
-            className="bg-light-blue-200 shadow-lg rounded-2xl p-6 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-6">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="w-40 h-40 object-cover rounded-full"
-              />
+    // Khalti Payment Config
+    const khaltiConfig = {
+        publicKey: "2e93b617f57d4a4e9e992692320bc6e1",
+        productIdentity: "1234567890",
+        productName: "Doctor appointment system",
+        productUrl: "http://localhost:3000/",
+        eventHandler: {
+            onSuccess(payload) {
+                console.log("Payment Successful", payload);
+                alert("Khalti Payment successful! Appointment confirmed.");
+                setSelectedPaymentId(null);
+            },
+            onError(error) {
+                console.log("Payment Error", error);
+                alert("Khalti Payment failed. Try again.");
+            },
+            onClose() {
+                console.log("Payment closed.");
+            },
+        },
+        paymentPreference: ["KHALTI"],
+    };
 
-              <div>
-                <h3 className="text-xl font-semibold text-blue-900">{item.name}</h3>
-                <p className="text-blue-700">{item.speciality}</p>
-                <div className="mt-2 text-sm text-blue-800">
-                  <p className="font-medium">Address:</p>
-                  <p>{item.address.line1}</p>
-                  <p>{item.address.line2}</p>
+    const khaltiCheckout = new KhaltiCheckout(khaltiConfig);
+
+    const handleKhaltiPayment = () => {
+        khaltiCheckout.show({ amount: 1000 }); // Amount in Paisa (Rs.10)
+    };
+
+    const handleEsewaPayment = () => {
+        const amount = 10;
+        const url = `https://esewa.com.np/epay/main?amt=${amount}&psc=0&pdc=0&txAmt=0&tAmt=${amount}&pid=1234567890&scd=your_esewa_merchant_id&su=http://localhost:3000/payment-success&fu=http://localhost:3000/payment-failed`;
+        window.location.href = url;
+    };
+
+    const handlePayment = (appointmentId, method) => {
+        if (method === "Khalti") {
+            handleKhaltiPayment();
+        } else if (method === "eSewa") {
+            handleEsewaPayment();
+        }
+        setSelectedPaymentId(null);
+    };
+
+    useEffect(() => {
+        if (token) {
+            getUserAppointments();
+        }
+    }, [token]);
+
+    if (loading) return <div>Loading...</div>;
+
+    return (
+        <div>
+            <p className='pb-3 mt-12 font-medium text-zinc-700 border-b'>My Appointments</p>
+
+            {appointments.length === 0 ? (
+                <p className='text-zinc-600'>No appointments found.</p>
+            ) : (
+                <div>
+                    {appointments.map((item, index) => (
+                        <div className='grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-2.5 border-b' key={index}>
+                            <div>
+                                <img className='w-40 bg-indigo-50' src={item.docData.image} alt={`Dr. ${item.docData.name}`} />
+                            </div>
+
+                            <div className='flex-1 text-sm text-zinc-600'>
+                                <p className='text-netural-800 font-semibold'>{item.docData.name}</p>
+                                <p>{item.docData.speciality}</p>
+                                <p className='text-zinc-700 font-medium mt-2.5'>Address:</p>
+                                <p className='text-xs'>{item.docData.address.line1}</p>
+                                <p className='text-xs'>{item.docData.address.line2}</p>
+                                <p className='text-xs mt-2.5'>
+                                    <span className='text-sm text-netural-700 font-medium'>Date & Time:</span> {slotDateFormat(item.slotDate)} | {item.slotTime}
+                                </p>
+                            </div>
+
+                            <div className='flex flex-col gap-2 justify-end'>
+                                {!item.cancelled && (
+                                    <>
+                                        <button
+                                            onClick={() => setSelectedPaymentId(item._id)}
+                                            className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300'
+                                        >
+                                            Pay Online
+                                        </button>
+                                        <button
+                                            onClick={() => cancelAppointment(item._id)}
+                                            className='text-sm text-stone-500 text-center sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300'
+                                        >
+                                            Cancel Appointment
+                                        </button>
+                                    </>
+                                )}
+                                {item.cancelled && (
+                                    <button className='sm:min-w-48 py-2 border border-red-500 rounded text-red-500'>
+                                        Appointment Cancelled
+                                    </button>
+                                )}
+                            </div>
+
+                            {selectedPaymentId === item._id && (
+                                <div className="mt-4 bg-white p-4 rounded shadow w-full">
+                                    <p className='mb-2 font-medium'>Choose Payment Method:</p>
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={() => handlePayment(item._id, "Khalti")}
+                                            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                                        >
+                                            Pay with Khalti
+                                        </button>
+                                        <button
+                                            onClick={() => handlePayment(item._id, "eSewa")}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Pay with eSewa
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
-                <p className="mt-4 text-sm">
-                  <span className="font-medium text-blue-900">Date & Time:</span> 30 Feb, 2024 | 9:30 PM
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => setPaymentMethod("select")}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Pay Online
-              </button>
-              <button className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                Cancel Appointment
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {paymentMethod === "select" && (
-        <div className="mt-6 p-4 bg-white shadow-lg rounded-lg text-center">
-          <h3 className="text-lg font-semibold mb-4">Choose Payment Method</h3>
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={() => handlePayment("Khalti")}
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-            >
-              Pay with Khalti
-            </button>
-            <button
-              onClick={() => handlePayment("eSewa")}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-            >
-              Pay with eSewa
-            </button>
-          </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
-export default MyAppointment;
+export default MyAppointments;

@@ -4,6 +4,8 @@ import Home from './pages/Home';
 import Doctors from './pages/Doctors';
 import Navbar from './Components/Navbar'; 
 import Footer from './Components/Footer';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Appointment from './pages/Appointment';
 import Option from './pages/Option';
 import Myprofile from './pages/Myprofile';
@@ -21,7 +23,7 @@ const App = () => {
 
   return (
     <div className='mx-4 sm:mx-[10%]'>
-
+      <ToastContainer />
       {!hideNavFooter && <Navbar />}
       <Routes>
         <Route path="/" element={<div className="w-full mx-0"><Option /></div>} />
