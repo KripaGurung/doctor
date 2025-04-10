@@ -1,40 +1,74 @@
-import React from 'react'
-import { useContext } from 'react'
-import { AdminContext } from '../context/AdminContext'
-import { NavLink } from 'react-router-dom'
-import { assets } from '../assets/assets'
+import React, { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+import { NavLink } from 'react-router-dom';
+import { assets } from '../assets/assets';
 
 const Sidebar = () => {
+  const { aToken } = useContext(AdminContext);
 
-    const {aToken} = useContext(AdminContext)
   return (
-    <div className='min-h-scren bg-white border-r'>
-        {
-            aToken && <ul className='text-[#515151] mt-5'>
-            
-            <NavLink className={({isActive})=> `flex items-center gap-3 py-3.5 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`} to={'/'} >
-                <img src={assets.dashboard} alt="" className="w-6 h-6 object-contain"/>
-                <p>Dashboard</p>
-            </NavLink>
+    <div className="min-h-screen w-64 p-6 bg-white shadow-md rounded-lg">
+      {aToken && (
+        <ul className="space-y-4 mt-6">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                isActive
+                  ? 'bg-[#F2F3FF] border-l-4 border-primary font-semibold'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`
+            }
+          >
+            <img src={assets.dashboard} alt="Dashboard" className="w-5 h-5 object-contain" />
+            <span>Dashboard</span>
+          </NavLink>
 
-            <NavLink className={({isActive})=> `flex items-center gap-3 py-3.5 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`} to={'/all-appointments'}>
-                <img src={assets.appointment} alt="" className="w-6 h-6 object-contain"/>
-                <p>Appointment</p>
-            </NavLink>
+          <NavLink
+            to="/all-appointments"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                isActive
+                  ? 'bg-[#F2F3FF] border-l-4 border-primary font-semibold'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`
+            }
+          >
+            <img src={assets.appointment} alt="Appointments" className="w-5 h-5 object-contain" />
+            <span>Appointments</span>
+          </NavLink>
 
-            <NavLink className={({isActive})=> `flex items-center gap-3 py-3.5 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`} to={'/add-doctors'}>
-                <img src={assets.add} alt="" className="w-6 h-6 object-contain"/>
-                <p>Add Doctors</p>
-            </NavLink>
+          <NavLink
+            to="/add-doctors"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                isActive
+                  ? 'bg-[#F2F3FF] border-l-4 border-primary font-semibold'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`
+            }
+          >
+            <img src={assets.add} alt="Add Doctor" className="w-5 h-5 object-contain" />
+            <span>Add Doctor</span>
+          </NavLink>
 
-            <NavLink className={({isActive})=> `flex items-center gap-3 py-3.5 md:px-9 md:min-w-72 cursor-pointer ${isActive ? 'bg-[#F2F3FF] border-r-4 border-primary' : ''}`} to={'/doctors-list'}>
-                <img src={assets.team} alt="" className="w-6 h-6 object-contain"/>
-                <p>Doctor List</p>
-            </NavLink>
-            </ul>
-        }
+          <NavLink
+            to="/doctors-list"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-150 ${
+                isActive
+                  ? 'bg-[#F2F3FF] border-l-4 border-primary font-semibold'
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`
+            }
+          >
+            <img src={assets.team} alt="Doctor List" className="w-5 h-5 object-contain" />
+            <span>Doctor List</span>
+          </NavLink>
+        </ul>
+      )}
     </div>
-  )
-}
+  );
+};
 
 export default Sidebar
