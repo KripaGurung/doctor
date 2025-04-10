@@ -166,28 +166,37 @@ const MyAppointments = () => {
                                     </button>
                                 )}
                             </div>
-
-                            {selectedPaymentId === item._id && (
-                                <div className="mt-4 bg-white p-4 rounded shadow w-full">
-                                    <p className='mb-2 font-medium'>Choose Payment Method:</p>
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={() => handlePayment(item._id, "Khalti")}
-                                            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                                        >
-                                            Pay with Khalti
-                                        </button>
-                                        <button
-                                            onClick={() => handlePayment(item._id, "eSewa")}
-                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                        >
-                                            Pay with eSewa
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Modal Popup for Payment Method Selection */}
+            {selectedPaymentId && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-xl shadow-lg w-80 relative">
+                        <button
+                            onClick={() => setSelectedPaymentId(null)}
+                            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                        >
+                            ✕
+                        </button>
+                        <p className="text-lg font-medium mb-4">Choose Payment Method</p>
+                        <div className="flex flex-col gap-4">
+                            <button
+                                onClick={() => handlePayment(selectedPaymentId, "Khalti")}
+                                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                            >
+                                Pay with Khalti
+                            </button>
+                            <button
+                                onClick={() => handlePayment(selectedPaymentId, "eSewa")}
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                                Pay with eSewa
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
