@@ -4,10 +4,7 @@ const doctorSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    image: {
-        data: Buffer,
-        contentType: String,
-    },
+    image:{type:String, requried: true},
     speciality: { type: String, required: true },
     degree: { type: String, required: true },
     experience: { type: String, required: true },
@@ -16,6 +13,7 @@ const doctorSchema = new mongoose.Schema({
     address: { type: Object, required: true },
     date: { type: String, required: true },
     slots_booked: { type: Object, default: {} },
+    licenseNumber: { type: String, required: true },
 
     // New Fields for Certification and Approval Process
     certification: { type: String, required: true },

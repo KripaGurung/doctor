@@ -1,34 +1,71 @@
-import React, { createContext, useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
+import React, { useContext, useEffect } from 'react';
+import { AdminContext } from '../../context/AdminContext';
+import { AppContext } from '../../context/AppContext';
+import { assets } from '../../assets/assets';
 
-export const AdminContext = createContext();
+const AllAppointment = () => {
+  const { aToken, appointments, getAllAppointments, cancelAppointment } = useContext(AdminContext);
+  const { calculateAge, slotDateFormat, currency } = useContext(AppContext);
 
-const AdminContextProvider = ({ children }) => {
-  const [appointments, setAppointments] = useState([]);
-  const [aToken, setAToken] = useState(localStorage.getItem("aToken") || "");
-
-  const getAllAppointments = async () => {
-    try {
-      const response = await axios.get("http://localhost:4000/api/admin/appointments", {
-        headers: {
-          Authorization: `Bearer ${aToken}`,
-        },
-      });
-      setAppointments(response.data.appointments || []);
-    } catch (error) {
-      console.error("Error fetching appointments:", error);
-      toast.error("Failed to fetch appointments.");
+  useEffect(() => {
+    if (aToken) {
+      getAllAppointments();
     }
-  };
+  }, [aToken]);
 
-  const value = {
-    aToken,
-    appointments,
-    getAllAppointments, // Ensure this is included
-  };
+  if (!appointments) {
+    return <p>Loading appointments...</p>;
+  }
 
-  return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
+  return (
+    <div className="w-full max-w-6xl m-5">
+      <p className="mb-3 text-lg font-medium">All Appointments</p>
+
+      <div className="bg-white rounded text-sm max-h-[80vh] min-h-[60vh] overflow-y-scroll">
+        <div className="hidden sm:grid grid-cols-[0.5fr_3fr_1fr_3fr_3fr_1fr_1fr] grid-floe-col py-3 px-6 border-b">
+          <p>#</p>
+          <p>Patient</p>
+          <p>Age</p>
+          <p>Date & time</p>
+          <p>Doctor</p>
+          <p>Fee</p>
+          <p>Actions</p>
+        </div>
+
+        {appointments?.slice().reverse().map((item, index) => (
+          <div
+            className="flex flex-wrap justify-between max-sm:gap-5 max-sm:text-base sm:grid grid-cols-[0.5fr_3fr_1fr_3fr_3fr_1fr_1fr] gap-1 items-center text-gray-500 py-3 px-6 border-b hover:bg-gray-50"
+            key={index}
+          >
+            <p className="max-sm:hidden">{index + 1}</p>
+            <div className="flex items-center gap-2">
+              <img className="w-11 rounded-full" src={item.userData.image} alt=" " /> <p>{item.userData.name}</p>
+            </div>
+            <p className="max-sm:hidden">{calculateAge(item.userData.dob)}</p>
+            <p>{slotDateFormat(item.slotDate)}, {item.slotTime}</p>
+            <div className="flex items-center gap-2">
+              <img className="w-11 rounded-full" src={item.docData.image} alt=" " /> <p>{item.docData.name}</p>
+            </div>
+            <p>{currency}{item.amount}</p>
+            {item.cancelled ? (
+              <p className="text-red-500 text-xs-medium">Cancelled</p>
+            ) : item.isCompleted ? (
+              <p className="text-green-500 text-xs-medium">Completed</p>
+            ) : (
+              <div className="flex">
+                <img
+                  onClick={() => cancelAppointment(item._id)}
+                  className="w-10 cursor-pointer"
+                  src={assets.cancel_icon}
+                  alt=" "
+                />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
-export default AdminContextProvider;
+export default AllAppointment;

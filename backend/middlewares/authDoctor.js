@@ -1,10 +1,8 @@
 import jwt from 'jsonwebtoken'
+import doctorModel from '../models/doctorModel.js';
 
-//admin authentication middleware
-
-const authDoctor = async (req, res, next) => {
+export const authDoctor = async (req, res, next) => {
     try{
-
         const {dtoken} = req.headers
 
         if(!dtoken){
@@ -21,7 +19,20 @@ const authDoctor = async (req, res, next) => {
         console.log(error)
         res.json({success:false,message:error.message})
     }
-
 }
 
-export default authDoctor
+export const verifyDoctor = async (req, res, next) => {
+  const token = req.header('dtoken');
+  if (!token) return res.status(401).json({ message: "Access Denied" });
+
+  try {
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
+    const doctor = await doctorModel.findById(verified.id);
+    if (!doctor) return res.status(401).json({ message: "Doctor not found" });
+
+    req.doctor = doctor;
+    next();
+  } catch (err) {
+    res.status(401).json({ message: "Invalid Token" });
+  }
+}

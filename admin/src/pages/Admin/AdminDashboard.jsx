@@ -247,7 +247,7 @@ const AdminDashboard = () => {
         <div className="divide-y">
           {appointments.length > 0 ? (
             appointments.map((appointment) => (
-              <div key={appointment.id} className="p-6 flex items-center justify-between">
+              <div key={appointment._id} className="p-6 flex items-center justify-between">
                 <div>
                   <h3 className="font-medium">{appointment.doctorName}</h3>
                   <p className="text-sm text-gray-500">Booking on {appointment.bookingDate}</p>
@@ -257,7 +257,7 @@ const AdminDashboard = () => {
                     {appointment.status || 'Pending'}
                   </span>
                   <button 
-                    onClick={() => handleRemoveAppointment(appointment.id)}
+                    onClick={() => handleRemoveAppointment(appointment._id)}
                     className="text-gray-400 hover:text-gray-600"
                   >
                     <X className="h-4 w-4" />
@@ -343,4 +343,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminDashboard

@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../context/AppContext';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import Swal from 'sweetalert2';
-import KhaltiCheckout from 'khalti-checkout-web';
+import { useContext, useEffect, useState } from 'react'
+import { AppContext } from '../context/AppContext'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import Swal from 'sweetalert2'
+import KhaltiCheckout from 'khalti-checkout-web'
+
 
 const MyAppointments = () => {
     const { backendUrl, token, getDoctorsData } = useContext(AppContext);
@@ -68,7 +69,7 @@ const MyAppointments = () => {
 
     // Khalti Payment Config
     const khaltiConfig = {
-        publicKey: "2e93b617f57d4a4e9e992692320bc6e1",
+        publicKey: "84d65d807f78402fb84a03a411fd849f",
         productIdentity: "1234567890",
         productName: "Doctor appointment system",
         productUrl: "http://localhost:3000/",
@@ -117,6 +118,34 @@ const MyAppointments = () => {
     }, [token]);
 
     if (loading) return <div>Loading...</div>;
+
+
+
+    const payWithKhalti = async () => {
+        try {
+            const response = await fetch(`http://localhost:4000/khalti/complete-khalti-payment`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // Change the product id to doctor id , buyer name to patient  and amiunt
+                    product_id:"12345678",buyer_name:"Kirpa",amount:200
+                })
+            })
+            console.log('Paying with Khalti...');
+
+            const data = await response.json();
+            console.log(data);
+
+            if (response.status===200) {       
+                window.location.href = data.message; // Redirect to Khalti payment page
+            }
+
+        } catch (error) {
+           console.log(error) 
+        }
+    }
 
     return (
         <div>
@@ -184,7 +213,8 @@ const MyAppointments = () => {
                         <p className="text-lg font-medium mb-4">Choose Payment Method</p>
                         <div className="flex flex-col gap-4">
                             <button
-                                onClick={() => handlePayment(selectedPaymentId, "Khalti")}
+                            onClick={()=>payWithKhalti()}
+                                // onClick={() => handlePayment(selectedPaymentId, "Khalti")}
                                 className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
                             >
                                 Pay with Khalti

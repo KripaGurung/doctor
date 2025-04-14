@@ -6,6 +6,21 @@ import { v2 as cloudinary } from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import sendEmail from "../utils/sendEmail.js";
 import userModel from "../models/userModel.js";
+import appointmentModel from "../models/appointmentModel.js";
+import Appointment from '../models/appointmentModel.js';
+import User from '../models/userModel.js'; 
+
+// export const getAppointments = async (req, res) => {
+//   try {
+//     const appointments = await Appointment.find()
+//       .populate('user') // Ensure this works by registering the User model
+//       .populate('doctor');
+//     res.status(200).json({ success: true, appointments });
+//   } catch (error) {
+//     console.error('Error fetching appointments:', error);
+//     res.status(500).json({ success: false, message: 'Failed to fetch appointments' });
+//   }
+// };
 
 
 // // Configure Multer for file uploads (certifications, images)
@@ -112,7 +127,7 @@ const allDoctors = async (req, res) => {
 // Doctor appling for approval
 const applyDoctor = async (req, res) => {
   try {
-    const { name, email, speciality, degree, experience, about, fees, addressLine1, addressLine2 } = req.body;
+    const { name, email, speciality, degree, experience, about, fees, addressLine1, addressLine2, licenseNumber } = req.body;
     const certificationFile = req.file?.certification; // Check for certification upload
     let certificationUrl = "";
 
@@ -132,6 +147,7 @@ const applyDoctor = async (req, res) => {
       fees,
       address: { line1: addressLine1, line2: addressLine2 },
       certification: certificationUrl,
+      licenseNumber,
       approved: false,
     });
 
@@ -157,46 +173,43 @@ const getPendingDoctors = async (req, res) => {
 
 
 
-//  approving doctor application
+// approving doctor application
 const approveDoctor = async (req, res) => {
   try {
-    const { doctorId } = req.body;
+    const doctorId = req.params.id;
     const doctor = await doctorModel.findById(doctorId);
 
     if (!doctor) return res.status(404).json({ success: false, message: "Doctor not found" });
 
+    // Set default values for required fields if they're missing
+    if (!doctor.password) {
+      // Generate a random password
+      const randomPassword = Math.random().toString(36).slice(-8);
+      doctor.password = await bcrypt.hash(randomPassword, 10);
+    }
+    if (!doctor.image) doctor.image = "default-doctor-image.png";
+    if (!doctor.date) doctor.date = new Date().toISOString();
+    if (!doctor.slots_booked) doctor.slots_booked = {};
+    if (!doctor.certification) doctor.certification = "pending-certification.jpg";
+    if (!doctor.licenseNumber) doctor.licenseNumber = "pending-license";
+
     doctor.approved = true;
     await doctor.save();
 
-        // // Send approval email
-        // await sendEmail(
-        //   doctor.email,
-        //   "Application Approved",
-        //   `<p>Dear ${doctor.name},</p>
-        //   <p>Congratulations! Your application has been approved.</p>
-        //   <p>You can now access your doctor dashboard.</p>
-        //   <p>Best Regards,<br/>Admin Team</p>`
-        // );
-
-        // Send approval email
-    const emailSubject = "Application Approved";
-    const emailMessage = `
-      Dear ${doctor.name},
-
-      Congratulations! Your application has been approved.
-      You can now access your doctor dashboard.
-
-      Best Regards,
-      Admin Team
-    `;
-
-    const emailResult = await sendEmail(doctor.email, emailSubject, emailMessage);
-
-    if (!emailResult.success) {
-      console.error("Error sending approval email:", emailResult.message);
-      return res.status(500).json({ success: false, message: "Doctor approved, but email could not be sent." });
+    // Try to send approval email
+    try {
+      await sendEmail(
+        doctor.email,
+        "Application Approved",
+        `<p>Dear ${doctor.name},</p>
+        <p>Congratulations! Your application has been approved. You can now log in to your dashboard and start managing appointments.</p>
+        <p>Best Regards,<br/>Admin Team</p>`
+      );
+    } catch (emailError) {
+      console.error("Error sending approval email:", emailError);
+      // Continue even if email fails
     }
-    
+
     res.status(200).json({ success: true, message: "Doctor approved successfully" });
   } catch (error) {
     console.error("Error approving doctor:", error);
@@ -207,20 +220,25 @@ const approveDoctor = async (req, res) => {
 //  cancelling doctor application
 const rejectDoctor = async (req, res) => {
   try {
-    const { doctorId } = req.body;
+    const doctorId = req.params.id;
     const doctor = await doctorModel.findByIdAndDelete(doctorId);
 
     if (!doctor) return res.status(404).json({ success: false, message: "Doctor not found" });
 
-     // Send rejection email
-     await sendEmail(
-      doctor.email,
-      "Application Rejected",
-      `<p>Dear ${doctor.name},</p>
-      <p>We regret to inform you that your application has been rejected.</p>
-      <p>If you have any questions, please contact support.</p>
-      <p>Best Regards,<br/>Admin Team</p>`
-    );
+    // Try to send rejection email, but don't fail if it doesn't work
+    try {
+      await sendEmail(
+        doctor.email,
+        "Application Rejected",
+        `<p>Dear ${doctor.name},</p>
+        <p>We regret to inform you that your application has been rejected.</p>
+        <p>If you have any questions, please contact support.</p>
+        <p>Best Regards,<br/>Admin Team</p>`
+      );
+    } catch (emailError) {
+      console.error("Error sending rejection email:", emailError);
+      // Continue with the response even if email fails
+    }
 
     res.status(200).json({ success: true, message: "Doctor application rejected" });
   } catch (error) {
@@ -251,4 +269,38 @@ const getPatientCount = async (req, res) => {
   }
 };
 
-export { addDoctor, loginAdmin, allDoctors, applyDoctor, getPendingDoctors, approveDoctor, rejectDoctor, getDoctorCount, getPatientCount}
+// Fetch all appointments
+// const getAppointments = async (req, res) => {
+//   try {
+//     const appointments = await appointmentModel
+//       .find()
+//       .populate("userId", "name email") 
+//       .populate("docId", "name email") 
+//       .sort({ date: -1 }) 
+//       .limit(10); 
+//     res.status(200).json({ success: true, appointments });
+//   } catch (error) {
+//     console.error("Error fetching appointments:", error);
+//     res.status(500).json({ success: false, message: "Failed to fetch appointments" });
+//   }
+// }
+
+const getAppointments = async (req, res) => {
+  try {
+    console.log("Fetching appointments...");
+    const appointments = await appointmentModel
+      .find()
+      .populate("user", "name email")
+      .populate("doctor", "name email")
+      .sort({ date: -1 })
+      .limit(10);
+    console.log("Appointments fetched:", appointments);
+    res.status(200).json({ success: true, appointments });
+  } catch (error) {
+    console.error("Error fetching appointments:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch appointments" });
+  }
+}
+
+
+export { addDoctor, loginAdmin, allDoctors, applyDoctor, getPendingDoctors, approveDoctor, rejectDoctor, getDoctorCount, getPatientCount, getAppointments }; 

@@ -12,9 +12,11 @@ const DoctorForm = () => {
     experience: "",
     about: "",
     fees: "",
+    licenseNumber: "",
     addressLine1: "",
     addressLine2: "",
     certification: null,
+    photo: null,
   });
 
   const handleChange = (e) => {
@@ -24,7 +26,7 @@ const DoctorForm = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
-      setFormData({ ...formData, certification: e.target.files[0] });
+      setFormData({ ...formData, [e.target.name]: e.target.files[0] });
     }
   };
 
@@ -60,67 +62,168 @@ const DoctorForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">Full Name</label>
-              <input type="text" name="name" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="name" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="Dr. John Doe"
+                required 
+              />
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">Email</label>
-              <input type="email" name="email" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="email" 
+                name="email" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="doctor@example.com"
+                required 
+              />
             </div>
           </div>
 
-          <label className="block text-gray-700 font-medium mb-2">Password</label>
-          <input type="password" name="password" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Password</label>
+              <input 
+                type="password" 
+                name="password" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="Create a secure password"
+                required 
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Medical License Number</label>
+              <input 
+                type="text" 
+                name="licenseNumber" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="Enter your medical license or registration number"
+                required 
+              />
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">Speciality</label>
-              <input type="text" name="speciality" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="speciality" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="e.g. Cardiology, Dermatology"
+                required 
+              />
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">Degree</label>
-              <input type="text" name="degree" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="degree" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="e.g. MD, MBBS, MS"
+                required 
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">Years of Experience</label>
-              <input type="number" name="experience" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="number" 
+                name="experience" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="e.g. 5"
+                required 
+              />
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">Consultation Fees</label>
-              <input type="number" name="fees" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="number" 
+                name="fees" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="e.g. 100"
+                required 
+              />
             </div>
           </div>
 
-          <label className="block text-gray-700 font-medium mb-2">Tell us about yourself</label>
-          <textarea 
-            name="about" 
-            className="w-full border border-gray-300 rounded-lg p-3 min-h-32" 
-            onChange={handleChange} 
-            required
-          ></textarea>
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Tell us about yourself</label>
+            <textarea 
+              name="about" 
+              className="w-full border border-gray-300 rounded-lg p-3 min-h-32" 
+              onChange={handleChange} 
+              placeholder="Share your professional background, approach to patient care, and any specialized treatments you offer..."
+              required
+            ></textarea>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-700 font-medium mb-2">Address Line 1</label>
-              <input type="text" name="addressLine1" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="addressLine1" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="Street address, Building, etc."
+                required 
+              />
             </div>
             <div>
               <label className="block text-gray-700 font-medium mb-2">Address Line 2</label>
-              <input type="text" name="addressLine2" className="w-full border border-gray-300 rounded-lg p-3" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="addressLine2" 
+                className="w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleChange} 
+                placeholder="City, State, ZIP code"
+                required 
+              />
             </div>
           </div>
 
-          <label className="block text-gray-700 font-medium mb-2">Upload Certification</label>
-          <input type="file" name="certification" className="block w-full border border-gray-300 rounded-lg p-3" onChange={handleFileChange} required />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Upload Certification</label>
+              <input 
+                type="file" 
+                name="certification" 
+                className="block w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleFileChange} 
+                required 
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 font-medium mb-2">Upload Professional Photo</label>
+              <input 
+                type="file" 
+                name="photo" 
+                className="block w-full border border-gray-300 rounded-lg p-3" 
+                onChange={handleFileChange} 
+                required 
+              />
+            </div>
+          </div>
 
           <div className="mt-8 flex justify-end">
             <button 
               type="submit" 
               className="w-1/4 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
             >
-              Submit
+              Submit Application
             </button>
           </div>
         </form>

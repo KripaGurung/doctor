@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Eye, EyeOff } from 'lucide-react'; // 👈 Importing icons
+import { Eye, EyeOff } from 'lucide-react'; 
 import 'react-toastify/dist/ReactToastify.css';
 
 const ResetPassword = () => {

@@ -1,6 +1,13 @@
 import { assets } from '../assets/assets';
-
+import { useNavigate } from 'react-router-dom';
 const Header = () => {
+
+  const navigate = useNavigate();
+
+  const navToBookDoctor = () => {
+    navigate('/doctors');
+  }
+
   return (
     <div className='flex flex-col md:flex-row items-center bg-gradient-to-r from-teal-700 to-blue-500 rounded-lg px-6 md:px-12 lg:px-24 py-10 md:py-16 lg:py-20 relative'>
 
@@ -13,7 +20,7 @@ const Header = () => {
         Find the right doctor in seconds, <br />
         schedule your visit without any hassle!
         </p>
-        <a href="#speciality" className='flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-6 py-3 rounded-lg transition-all'>
+        <a href="#speciality" onClick={() => navToBookDoctor()} className='flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold px-6 py-3 rounded-lg transition-all'>
           Book Appointment 
           <img src={assets.arrow} alt="arrow" className='w-6' />
         </a>
