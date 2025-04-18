@@ -21,18 +21,50 @@ export const authDoctor = async (req, res, next) => {
     }
 }
 
-export const verifyDoctor = async (req, res, next) => {
-  const token = req.header('dtoken');
-  if (!token) return res.status(401).json({ message: "Access Denied" });
+// export const verifyDoctor = async (req, res, next) => {
+//   const token = req.header('dtoken');
+//   if (!token) return res.status(401).json({ message: "Access Denied" });
 
+//   try {
+//     const verified = jwt.verify(token, process.env.JWT_SECRET);
+//     const doctor = await doctorModel.findById(verified.id);
+//     if (!doctor) return res.status(401).json({ message: "Doctor not found" });
+
+//     req.doctor = doctor;
+//     next();
+//   } catch (err) {
+//     res.status(401).json({ message: "Invalid Token" });
+//   }
+// }
+
+
+export const verifyDoctor = async (req, res, next) => {
   try {
+    const token = req.header('dtoken');
+    if (!token) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Access Denied - No token provided" 
+      });
+    }
+
     const verified = jwt.verify(token, process.env.JWT_SECRET);
     const doctor = await doctorModel.findById(verified.id);
-    if (!doctor) return res.status(401).json({ message: "Doctor not found" });
+    
+    if (!doctor) {
+      return res.status(401).json({ 
+        success: false,
+        message: "Doctor not found or unauthorized" 
+      });
+    }
 
     req.doctor = doctor;
     next();
-  } catch (err) {
-    res.status(401).json({ message: "Invalid Token" });
+  } catch (error) {
+    console.error('Auth error:', error);
+    res.status(401).json({ 
+      success: false,
+      message: "Invalid token" 
+    });
   }
-}
+};

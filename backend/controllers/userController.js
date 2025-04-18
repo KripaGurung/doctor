@@ -163,58 +163,188 @@ const getProfile = async (req, res) => {
 };
 
 // API to book appointment
+// const bookAppointment = async (req, res) => {
+//     try {
+//         const { docId, slotDate, slotTime, userId } = req.body;
+
+//         const user = await userModel.findById(userId);
+//         if (!user) {
+//             return res.status(404).json({ success: false, message: 'User not found' });
+//         }
+
+//         const doctor = await doctorModel.findById(docId);
+//         if (!doctor) {
+//             return res.status(404).json({ success: false, message: 'Doctor not found' });
+//         }
+
+//         if (doctor.slots_booked[slotDate]?.includes(slotTime)) {
+//             return res.status(400).json({ success: false, message: 'Slot is already booked' });
+//         }
+
+//         if (!doctor.slots_booked[slotDate]) {
+//             doctor.slots_booked[slotDate] = [];
+//         }
+//         doctor.slots_booked[slotDate].push(slotTime);
+//         await doctor.save();
+
+//         const appointment = new appointmentModel({
+//             doctor: doctor._id,
+//             user: user._id,
+//             patientName: user.name,
+//             reason: 'General Consultation',
+//             slotDate,
+//             slotTime,
+//             amount: doctor.fees,
+//             userData: {
+//                 name: user.name,
+//                 email: user.email,
+//             },
+//             docData: {
+//                 name: doctor.name,
+//                 speciality: doctor.speciality,
+//                 degree: doctor.degree,
+//                 address: doctor.address,
+//                 image: doctor.image,
+//             },
+//         });
+
+//         await appointment.save();
+
+//         res.status(201).json({ success: true, message: 'Appointment booked successfully' });
+//     } catch (error) {
+//         console.error('Error booking appointment:', error);
+//         res.status(500).json({ success: false, message: 'Internal Server Error' });
+//     }
+// };
+
+
+// const bookAppointment = async (req, res) => {
+//   try {
+//     const { docId, slotDate, slotTime, userId } = req.body;
+
+//     // Validate user and doctor exist
+//     const user = await userModel.findById(userId);
+//     const doctor = await doctorModel.findById(docId);
+//     if (!user || !doctor) {
+//       return res.status(404).json({ success: false, message: 'Invalid user or doctor' });
+//     }
+
+//     // Check if slot is available
+//     if (doctor.slots_booked[slotDate]?.includes(slotTime)) {
+//       return res.status(400).json({ success: false, message: 'Slot already booked' });
+//     }
+
+//     // Create appointment with Pending status
+//     const appointment = new appointmentModel({
+//       doctor: doctor._id,
+//       user: user._id,
+//       patientName: user.name,
+//       reason: 'General Consultation',
+//       slotDate,
+//       slotTime,
+//       status: 'Pending',
+//       amount: doctor.fees,
+//       userData: {
+//         name: user.name,
+//         email: user.email
+//       },
+//       docData: {
+//         name: doctor.name,
+//         speciality: doctor.speciality,
+//         degree: doctor.degree,
+//         address: doctor.address,
+//         image: doctor.image
+//       }
+//     });
+
+//     await appointment.save();
+//     res.status(201).json({ success: true, message: 'Appointment requested successfully' });
+//   } catch (error) {
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
 const bookAppointment = async (req, res) => {
-    try {
-        const { docId, slotDate, slotTime, userId } = req.body;
+  try {
+    const { docId, slotDate, slotTime } = req.body;
+    const userId = req.user._id; // From auth middleware
 
-        const user = await userModel.findById(userId);
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        const doctor = await doctorModel.findById(docId);
-        if (!doctor) {
-            return res.status(404).json({ success: false, message: 'Doctor not found' });
-        }
-
-        if (doctor.slots_booked[slotDate]?.includes(slotTime)) {
-            return res.status(400).json({ success: false, message: 'Slot is already booked' });
-        }
-
-        if (!doctor.slots_booked[slotDate]) {
-            doctor.slots_booked[slotDate] = [];
-        }
-        doctor.slots_booked[slotDate].push(slotTime);
-        await doctor.save();
-
-        const appointment = new appointmentModel({
-            doctor: doctor._id,
-            user: user._id,
-            patientName: user.name,
-            reason: 'General Consultation',
-            slotDate,
-            slotTime,
-            amount: doctor.fees,
-            userData: {
-                name: user.name,
-                email: user.email,
-            },
-            docData: {
-                name: doctor.name,
-                speciality: doctor.speciality,
-                degree: doctor.degree,
-                address: doctor.address,
-                image: doctor.image,
-            },
-        });
-
-        await appointment.save();
-
-        res.status(201).json({ success: true, message: 'Appointment booked successfully' });
-    } catch (error) {
-        console.error('Error booking appointment:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    // Input validation
+    if (!docId || !slotDate || !slotTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
     }
+
+    // Find doctor and validate
+    const doctor = await doctorModel.findById(docId);
+    if (!doctor) {
+      return res.status(404).json({
+        success: false, 
+        message: 'Doctor not found'
+      });
+    }
+
+    // Check if slot is already booked
+    if (doctor.slots_booked?.[slotDate]?.includes(slotTime)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This slot is already booked'
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Create appointment
+    const appointment = new appointmentModel({
+      doctor: docId,
+      user: userId,
+      slotDate,
+      slotTime,
+      status: 'Pending',
+      amount: doctor.fees || 0,
+      patientName: user.name,
+      userData: {
+        name: user.name,
+        email: user.email
+      },
+      docData: {
+        name: doctor.name,
+        speciality: doctor.speciality,
+        degree: doctor.degree,
+        address: doctor.address,
+        image: doctor.image
+      }
+    });
+
+    await appointment.save();
+
+    // Update doctor's booked slots
+    await doctorModel.findByIdAndUpdate(docId, {
+      $push: { [`slots_booked.${slotDate}`]: slotTime }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Appointment booked successfully',
+      appointment
+    });
+
+  } catch (error) {
+    console.error('Error booking appointment:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to book appointment',
+      error: error.message
+    });
+  }
 };
 
 // API to cancel the appointment
@@ -248,9 +378,12 @@ const cancelAppointment = async (req, res) => {
 
 const listAppointment = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const userId = req.user._id; // From auth middleware
 
-        const appointments = await appointmentModel.find({ user: userId }).populate('doctor', 'name speciality');
+        const appointments = await appointmentModel.find({
+            user: userId,
+            status: 'Confirmed'
+        }).populate('doctor', 'name speciality');
 
         res.status(200).json({ success: true, appointments });
     } catch (error) {
@@ -259,5 +392,21 @@ const listAppointment = async (req, res) => {
     }
 }
 
+const listRequestedAppointments = async (req, res) => {
+    try {
+        const userId = req.user._id; // From auth middleware
 
-export { addUser, loginUser, forgotPassword, resetPassword, bookAppointment, listAppointment, getProfile, cancelAppointment }
+        const appointments = await appointmentModel.find({
+            user: userId,
+            status: 'Pending'
+        }).populate('doctor', 'name speciality');
+
+        res.status(200).json({ success: true, requestedAppointments: appointments });
+    } catch (error) {
+        console.error('Error fetching requested appointments:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+}
+
+
+export { addUser, loginUser, forgotPassword, resetPassword, bookAppointment, listAppointment, listRequestedAppointments, getProfile, cancelAppointment }

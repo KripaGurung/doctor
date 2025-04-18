@@ -8,17 +8,13 @@ import { authDoctor, verifyDoctor } from '../middlewares/authDoctor.js';
 import { getDoctorDashboard } from '../controllers/doctorController.js';
 import { v2 as cloudinary } from 'cloudinary';
 import Appointment from '../models/appointmentModel.js';
+import Feedback from '../models/FeedbackModel.js';
+import authUser from '../middlewares/authUser.js';
+import { submitFeedback } from '../controllers/feedbackController.js';
+import userModel from '../models/userModel.js';
 
 
 const doctorRouter = express.Router();
-
-
-// Cloudinary configuration
-// cloudinary.config({
-//   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-//   api_key: process.env.CLOUDINARY_API_KEY,
-//   api_secret: process.env.CLOUDINARY_API_SECRET,
-// })
 
 
 // Multer configuration for file uploads
@@ -115,16 +111,92 @@ doctorRouter.get('/me', authDoctor, async (req, res) => {
 })
 
 
+doctorRouter.post('/feedback', authUser, async (req, res) => {
+  try {
+    const { doctorId, rating, comment } = req.body;
+    const userId = req.user._id;
+
+    // Validate required fields
+    if (!doctorId || !rating) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Doctor ID and rating are required" 
+      });
+    }
+
+    // Get user details
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    const feedback = new Feedback({
+      doctor: doctorId,
+      user: userId,
+      userName: user.name, // Add user name to feedback
+      rating,
+      comment,
+      createdAt: new Date()
+    });
+
+    await feedback.save();
+    res.status(201).json({ 
+      success: true, 
+      message: "Review submitted successfully",
+      feedback: {
+        ...feedback._doc,
+        userName: user.name
+      }
+    });
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || "Failed to submit review" 
+    });
+  }
+});
+
+// Get doctor reviews route
+doctorRouter.get('/feedback/:doctorId', async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({ doctor: req.params.doctorId })
+      .sort({ createdAt: -1 });
+
+    const totalRatings = feedbacks.length;
+    const averageRating = totalRatings > 0
+      ? feedbacks.reduce((sum, fb) => sum + fb.rating, 0) / totalRatings
+      : 0;
+
+    res.json({
+      success: true,
+      feedbacks,
+      totalRatings,
+      averageRating: averageRating.toFixed(1)
+    });
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ success: false, message: "Failed to fetch reviews" });
+  }
+})
+
 doctorRouter.get('/list',doctorList )
 doctorRouter.post('/login', loginDoctor)
 doctorRouter.get('/appointments', verifyDoctor, appointmentsDoctor)
 
-doctorRouter.put('/appointments/:id/approve', verifyDoctor, approveAppointment);
-doctorRouter.delete('/appointments/:id/reject', verifyDoctor, rejectAppointment);
+// doctorRouter.put('/appointments/:id/approve', verifyDoctor, approveAppointment);
+// doctorRouter.delete('/appointments/:id/reject', verifyDoctor, rejectAppointment);
+
+doctorRouter.patch('/appointments/:id/approve', verifyDoctor, approveAppointment);
+doctorRouter.patch('/appointments/:id/reject', verifyDoctor, rejectAppointment);
 
 doctorRouter.post('/complete-appointment', authDoctor, appointmentComplete)
 doctorRouter.post('/cancel-appointment', authDoctor, appointmentCancel)
 doctorRouter.get('/dashboard', verifyDoctor, getDoctorDashboard);
+doctorRouter.post('/feedback', authUser, submitFeedback);
 
 // Get appointments for logged in doctor
 doctorRouter.get('/my-appointments', authDoctor, async (req, res) => {

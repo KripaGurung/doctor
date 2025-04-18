@@ -28,6 +28,17 @@ app.use('/api/doctor',doctorRouter)
 app.use("/khalti", khalti);
 
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global error:', err);
+  res.status(500).json({
+    success: false,
+    message: 'Internal Server Error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+
 //localhost:4000/api/user/adduser)
 app.use('/uploads', express.static('uploads'));
 

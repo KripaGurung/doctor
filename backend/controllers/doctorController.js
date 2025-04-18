@@ -8,6 +8,7 @@ import Feedback from '../models/FeedbackModel.js';
 
 
 
+
 const changeAvailabilty = async (req, res) => {
     try {
         
@@ -97,26 +98,27 @@ const loginDoctor = async (req, res) =>{
 //     }
 // };
 
+
 const appointmentsDoctor = async (req, res) => {
   try {
-    const doctorId = req.doctor._id; // Get doctor ID from auth middleware
-    console.log('Doctor ID:', doctorId);
+    const doctorId = req.doctor._id; // From auth middleware
 
-    const doctorAppointments = await appointmentModel.find({ docId: doctorId }) 
-      .populate('userId', 'name email')
-      .populate('docId', 'name email');
+    const appointments = await appointmentModel.find({ 
+      doctor: doctorId 
+    })
+    .populate('user', 'name email') // Populate user details
+    .sort({ slotDate: -1, slotTime: -1 });
 
-    console.log('Appointments:', doctorAppointments);
-
-    // Transform the data to match frontend expectations
-    const formattedAppointments = doctorAppointments.map(appointment => ({
+    const formattedAppointments = appointments.map(appointment => ({
       _id: appointment._id,
-      date: appointment.slotDate,
-      time: appointment.slotTime,
-      status: appointment.status,
       user: {
-        name: appointment.userData?.name || 'Unknown'
-      }
+        name: appointment.user.name,
+        email: appointment.user.email
+      },
+      slotDate: appointment.slotDate,
+      slotTime: appointment.slotTime,
+      status: appointment.status,
+      reason: appointment.reason || 'General Consultation'
     }));
 
     res.status(200).json(formattedAppointments);
@@ -124,42 +126,57 @@ const appointmentsDoctor = async (req, res) => {
     console.error('Error fetching appointments:', error);
     res.status(500).json({ message: 'Failed to fetch appointments' });
   }
-};
+}
 
 //Api to mark appointment completeted for docotr panel
 
-// Approve Appointment
+// Approve appointment endpoint
 const approveAppointment = async (req, res) => {
+  try {
+    const appointmentId = req.params.id;
+    const appointment = await appointmentModel.findByIdAndUpdate(
+      appointmentId,
+      { status: 'Confirmed' },
+      { new: true }
+    ).populate('user', 'name email');
+
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Appointment approved successfully',
+      appointment 
+    });
+  } catch (error) {
+    console.error('Error approving appointment:', error);
+    res.status(500).json({ success: false, message: 'Failed to approve appointment' });
+  }
+}
+
+// Reject appointment endpoint
+const rejectAppointment = async (req, res) => {
   try {
     const appointmentId = req.params.id;
     const appointment = await appointmentModel.findById(appointmentId);
 
-    if (!appointment) return res.status(404).json({ message: 'Appointment not found' });
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found' });
+    }
 
-    appointment.status = 'Confirmed';
-    await appointment.save();
+    // Delete the appointment when rejected
+    await appointmentModel.findByIdAndDelete(appointmentId);
 
-    res.status(200).json({ success: true, message: 'Appointment approved', appointment });
-  } catch (error) {
-    console.error('Error approving appointment:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};
-
-// Reject Appointment
-const rejectAppointment = async (req, res) => {
-  try {
-    const appointmentId = req.params.id;
-    const deleted = await appointmentModel.findByIdAndDelete(appointmentId);
-
-    if (!deleted) return res.status(404).json({ message: 'Appointment not found' });
-
-    res.status(200).json({ success: true, message: 'Appointment rejected and deleted' });
+    res.status(200).json({ 
+      success: true, 
+      message: 'Appointment rejected successfully' 
+    });
   } catch (error) {
     console.error('Error rejecting appointment:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: 'Failed to reject appointment' });
   }
-};
+}
 
 
 const appointmentComplete = async (req, res) =>{
