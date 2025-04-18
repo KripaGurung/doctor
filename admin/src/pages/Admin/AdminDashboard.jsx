@@ -1,33 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { X } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [doctorCount, setDoctorCount] = useState(0);
   const [patientCount, setPatientCount] = useState(0);
-  const [doctorApplications, setDoctorApplications] = useState([
-    {
-      id: 1,
-      name: "Dr. John Smith",
-      email: "john.smith@example.com",
-      specialty: "Cardiology"
-    },
-    {
-      id: 2,
-      name: "Dr. Emily Johnson",
-      email: "emily.johnson@example.com",
-      specialty: "Neurology"
-    },
-    {
-      id: 3,
-      name: "Dr. Michael Brown",
-      email: "michael.brown@example.com",
-      specialty: "Pediatrics"
-    }
-  ]);
+  const [dateRange, setDateRange] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     fetchPendingDoctors();
@@ -36,7 +17,6 @@ const AdminDashboard = () => {
     fetchAppointments();
   }, []);
 
-  // Fetch appointments
   const fetchAppointments = async () => {
     try {
       const response = await axios.get("http://localhost:4000/api/admin/appointments", {
@@ -44,35 +24,21 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${localStorage.getItem("aToken")}`,
         },
       });
-      
-      if (response.data.success) {
-        const formattedAppointments = response.data.appointments.map(apt => {
-          // Log the raw appointment data
-          console.log('Raw appointment:', apt);
-          
-          // Extract doctor name from docData
-          const doctorName = apt.docData?.name 
-            ? apt.docData.name.startsWith('Dr.') 
-              ? apt.docData.name // If name already starts with "Dr.", use as is
-              : `Dr. ${apt.docData.name}` // Add "Dr." only if not present
-            : 'Doctor data not available';
 
-          // Format the date and time
-          const bookingDate = apt.slotDate && apt.slotTime
-            ? `Booking on ${apt.slotDate} at ${apt.slotTime}`
-            : 'Booking date not available';
-          
-          return {
-            id: apt._id,
-            doctorName,
-            bookingDate,
-            status: apt.status || 'pending'
-          };
-        });
-        
+      if (response.data.success) {
+        const formattedAppointments = response.data.appointments.map((apt) => ({
+          id: apt._id,
+          patientName: apt.user?.name || "Unknown Patient",
+          patientEmail: apt.user?.email,
+          doctorName: apt.docData?.name || "Unknown Doctor",
+          doctorSpeciality: apt.docData?.speciality,
+          date: apt.slotDate,
+          time: apt.slotTime,
+          status: apt.status,
+          amount: apt.amount,
+        }));
+
         setAppointments(formattedAppointments);
-      } else {
-        toast.error(response.data.message || "Failed to fetch appointments");
       }
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -80,7 +46,53 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch patient count
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case "confirmed":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "cancelled":
+        return "bg-gray-100 text-gray-800";
+      case "completed":
+        return "bg-blue-100 text-blue-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  const filterAppointments = () => {
+    let filtered = [...appointments];
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(
+        (apt) => apt.status.toLowerCase() === statusFilter.toLowerCase()
+      );
+    }
+
+    const today = new Date();
+    switch (dateRange) {
+      case "week":
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        filtered = filtered.filter((apt) => new Date(apt.date) > weekAgo);
+        break;
+      case "month":
+        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1);
+        filtered = filtered.filter((apt) => new Date(apt.date) > monthAgo);
+        break;
+      case "year":
+        const yearAgo = new Date(today.getFullYear() - 1, today.getMonth());
+        filtered = filtered.filter((apt) => new Date(apt.date) > yearAgo);
+        break;
+      default:
+        break;
+    }
+
+    return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
   const fetchPatientCount = async () => {
     try {
       const response = await axios.get("http://localhost:4000/api/admin/patient-count", {
@@ -95,7 +107,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch pending doctors
   const fetchPendingDoctors = async () => {
     const token = localStorage.getItem("aToken");
 
@@ -113,11 +124,11 @@ const AdminDashboard = () => {
       });
 
       if (response.data.success) {
-        const formattedDoctors = response.data.doctors.map(doc => ({
+        const formattedDoctors = response.data.doctors.map((doc) => ({
           id: doc._id,
           name: doc.name,
           email: doc.email,
-          specialty: doc.specialty || 'General'
+          specialty: doc.specialty || "General",
         }));
         setDoctors(formattedDoctors);
       } else {
@@ -130,7 +141,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch doctor count
   const fetchDoctorCount = async () => {
     try {
       const response = await axios.get("http://localhost:4000/api/admin/doctor-count", {
@@ -145,23 +155,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleRemoveAppointment = async (id) => {
-    try {
-      const response = await axios.delete(`http://localhost:4000/api/admin/appointments/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("aToken")}`,
-        },
-      });
-      if (response.data.success) {
-        setAppointments(appointments.filter(app => app.id !== id));
-        toast.success("Appointment removed successfully");
-      }
-    } catch (error) {
-      console.error("Error removing appointment:", error);
-      toast.error("Failed to remove appointment");
-    }
-  };
-
   const handleApproveDoctor = async (id) => {
     try {
       const response = await axios.put(`http://localhost:4000/api/admin/approve-doctor/${id}`, {}, {
@@ -170,7 +163,7 @@ const AdminDashboard = () => {
         },
       });
       if (response.data.success) {
-        setDoctors(doctors.filter(doc => doc.id !== id));
+        setDoctors(doctors.filter((doc) => doc.id !== id));
         toast.success("Doctor approved successfully");
       }
     } catch (error) {
@@ -187,28 +180,12 @@ const AdminDashboard = () => {
         },
       });
       if (response.data.success) {
-        setDoctors(doctors.filter(doc => doc.id !== id));
+        setDoctors(doctors.filter((doc) => doc.id !== id));
         toast.success("Doctor rejected successfully");
       }
     } catch (error) {
       console.error("Error rejecting doctor:", error);
       toast.error("Failed to reject doctor");
-    }
-  };
-
-  const getStatusColor = (status) => {
-    // Default to pending if status is undefined
-    const currentStatus = (status || 'pending').toLowerCase();
-    
-    switch (currentStatus) {
-      case 'confirmed':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -236,38 +213,76 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Latest Appointments */}
-      <div className="bg-white rounded-lg shadow-sm">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold">Latest Appointments</h2>
-          <button className="text-blue-600 hover:text-blue-800 text-sm">
-            View All
-          </button>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      {/* History of Appointments */}
+      <div className="bg-white rounded-lg shadow-sm mt-8">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-xl font-semibold">History of Appointments</h2>
+            <div className="flex flex-wrap gap-3">
+              <select
+                className="px-3 py-2 border rounded-md text-sm"
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+              >
+                <option value="all">All Time</option>
+                <option value="week">Past Week</option>
+                <option value="month">Past Month</option>
+                <option value="year">Past Year</option>
+              </select>
+              <select
+                className="px-3 py-2 border rounded-md text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">All Status</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div className="divide-y">
-          {appointments.length > 0 ? (
-            appointments.map((appointment) => (
-              <div key={appointment._id} className="p-6 flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{appointment.doctorName}</h3>
-                  <p className="text-sm text-gray-500">Booking on {appointment.bookingDate}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
-                    {appointment.status || 'Pending'}
-                  </span>
-                  <button 
-                    onClick={() => handleRemoveAppointment(appointment._id)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-6 text-center text-gray-500">
-              No appointments found
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date & Time</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filterAppointments().map((appointment) => (
+                <tr key={appointment.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{appointment.patientName}</div>
+                    <div className="text-sm text-gray-500">{appointment.patientEmail}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{appointment.doctorName}</div>
+                    <div className="text-sm text-gray-500">{appointment.doctorSpeciality}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900">{appointment.date}</div>
+                    <div className="text-sm text-gray-500">{appointment.time}</div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
+                      {appointment.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filterAppointments().length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No appointments found for the selected filters
             </div>
           )}
         </div>
@@ -339,6 +354,7 @@ const AdminDashboard = () => {
           </table>
         </div>
       </div>
+    </div>
     </div>
   );
 };
